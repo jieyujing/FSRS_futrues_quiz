@@ -10,6 +10,12 @@ router = APIRouter(prefix="/import", tags=["题库导入"])
 parser = QuestionParser()
 
 
+import hashlib
+
+def get_content_hash(content: str) -> str:
+    """计算题目内容的MD5哈希"""
+    return hashlib.md5(content.encode("utf-8")).hexdigest()
+
 @router.post("/docx")
 async def import_docx(
     file: UploadFile = File(...),
@@ -30,8 +36,15 @@ async def import_docx(
         source = file.filename.replace(".docx", "")
         added_count = 0
 
+        # 获取现有题目的哈希，用于去重
+        existing_hashes = {h[0] for h in db.query(Question.content_hash).all()}
+
         for q in questions:
             if not q.get("content") or not q.get("options"):
+                continue
+
+            content_hash = get_content_hash(q["content"])
+            if content_hash in existing_hashes:
                 continue
 
             db_question = Question(
@@ -40,11 +53,13 @@ async def import_docx(
                 question_type="单选",
                 question_number=q.get("question_number"),
                 content=q["content"],
+                content_hash=content_hash,
                 options=q["options"],
                 correct_answer=q.get("correct_answer", ""),
                 explanation=q.get("explanation", "")
             )
             db.add(db_question)
+            existing_hashes.add(content_hash)
             added_count += 1
 
         db.commit()

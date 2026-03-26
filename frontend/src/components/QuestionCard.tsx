@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FileQuestion, AlertCircle } from 'lucide-react';
 
 interface Option {
   [key: string]: string;
@@ -9,6 +10,7 @@ interface QuestionCardProps {
   questionType: string;
   content: string;
   options?: Option;
+  mistakeCount?: number;
   onAnswer: (answer: string) => void;
   disabled?: boolean;
 }
@@ -17,14 +19,31 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   questionType,
   content,
   options,
+  mistakeCount = 0,
   onAnswer,
   disabled = false,
 }) => {
   const [selected, setSelected] = useState<string>('');
 
+  const isMulti = questionType.includes('多选') || questionType.includes('不定项');
+
   const handleSelect = (key: string) => {
     if (disabled) return;
-    setSelected(key);
+    
+    if (isMulti) {
+      // 多选逻辑
+      const current = selected.split('').filter(s => s);
+      const index = current.indexOf(key);
+      if (index > -1) {
+        current.splice(index, 1);
+      } else {
+        current.push(key);
+      }
+      setSelected(current.sort().join(''));
+    } else {
+      // 单选逻辑
+      setSelected(key);
+    }
   };
 
   const handleSubmit = () => {
@@ -36,17 +55,17 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   const renderOptions = () => {
     if (questionType === '判断') {
       return (
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-4">
           {['正确', '错误'].map((opt) => (
             <button
               key={opt}
               onClick={() => handleSelect(opt)}
               disabled={disabled}
-              className={`w-full p-4 text-left rounded-lg border transition-all ${
+              className={`p-5 rounded-xl border-2 font-medium transition-all duration-200 cursor-pointer ${
                 selected === opt
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                  ? 'border-[#0F172A] bg-[#0F172A] text-white shadow-md'
+                  : 'border-gray-200 bg-white text-[#0F172A] hover:border-[#1E3A8A] hover:bg-gray-50'
+              } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {opt}
             </button>
@@ -56,58 +75,78 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     }
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {options &&
-          Object.entries(options).map(([key, value]) => (
-            <button
-              key={key}
-              onClick={() => handleSelect(key)}
-              disabled={disabled}
-              className={`w-full p-5 text-left rounded-2xl border-2 transition-all duration-200 group flex items-start gap-4 ${
-                selected === key
-                  ? 'border-blue-500 bg-blue-50 shadow-sm'
-                  : 'border-gray-100 hover:border-gray-300 hover:bg-gray-50'
-              } ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:-translate-y-0.5'}`}
-            >
-              <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm shrink-0 transition-colors ${
-                selected === key
-                  ? 'border-blue-500 bg-blue-500 text-white'
-                  : 'border-gray-200 text-gray-400 group-hover:border-gray-300 group-hover:text-gray-500'
-              }`}>
-                {key}
-              </div>
-              <div className={`text-base leading-relaxed ${
-                selected === key ? 'text-blue-900 font-medium' : 'text-gray-700'
-              }`}>
-                {value}
-              </div>
-            </button>
-          ))}
+          Object.entries(options).map(([key, value]) => {
+            const isSelected = isMulti ? selected.includes(key) : selected === key;
+            return (
+              <button
+                key={key}
+                onClick={() => handleSelect(key)}
+                disabled={disabled}
+                className={`w-full p-4 text-left rounded-xl border-2 transition-all duration-200 group cursor-pointer flex items-start gap-4 ${
+                  isSelected
+                    ? 'border-[#0F172A] bg-[#0F172A]/5 shadow-sm'
+                    : 'border-gray-100 bg-white hover:border-[#1E3A8A]/30 hover:bg-gray-50'
+                } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 transition-all duration-200 ${
+                    isSelected
+                      ? 'bg-[#0F172A] text-white'
+                      : 'bg-gray-100 text-[#64748B] group-hover:bg-[#1E3A8A]/10 group-hover:text-[#1E3A8A]'
+                  }`}
+                >
+                  {key}
+                </div>
+                <div
+                  className={`text-base leading-relaxed pt-1 ${
+                    isSelected ? 'text-[#0F172A] font-medium' : 'text-[#334155]'
+                  }`}
+                >
+                  {value}
+                </div>
+              </button>
+            );
+          })}
       </div>
     );
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+      {/* 题目类型标签 */}
+      <div className="flex items-center gap-2 mb-6">
+        <div className="p-2 bg-[#0F172A] rounded-lg">
+          <FileQuestion className="w-4 h-4 text-white" />
+        </div>
+        <span className="px-3 py-1.5 bg-gray-100 text-[#0F172A] rounded-full text-sm font-medium">
           {questionType}
         </span>
+        {mistakeCount > 0 && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 rounded-full text-sm font-bold border border-rose-100 animate-pulse">
+            <AlertCircle className="w-4 h-4" />
+            已错 {mistakeCount} 次
+          </span>
+        )}
       </div>
 
-      <div className="mb-6 text-gray-800 leading-relaxed whitespace-pre-wrap">
+      {/* 题目内容 */}
+      <div className="mb-8 text-[#0F172A] leading-relaxed whitespace-pre-wrap text-lg font-medium">
         {content}
       </div>
 
+      {/* 选项 */}
       {renderOptions()}
 
+      {/* 提交按钮 */}
       <button
         onClick={handleSubmit}
         disabled={!selected || disabled}
-        className={`mt-6 w-full py-3 rounded-lg font-medium transition-all ${
+        className={`mt-8 w-full py-4 rounded-xl font-semibold text-lg transition-all duration-200 cursor-pointer ${
           selected && !disabled
-            ? 'bg-blue-500 text-white hover:bg-blue-600'
-            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            ? 'bg-[#CA8A04] text-white hover:bg-[#A16207] shadow-md hover:shadow-lg hover:-translate-y-0.5'
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
         }`}
       >
         提交答案

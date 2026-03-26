@@ -1,23 +1,36 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
+import { HashRouter, Routes, Route, NavLink } from 'react-router-dom';
+import { GraduationCap, BookOpen } from 'lucide-react';
 import Home from './pages/Home';
 import Practice from './pages/Practice';
 import QuestionBank from './pages/QuestionBank';
 
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-gray-100">
-        {/* 导航栏 */}
-        <nav className="bg-white shadow">
-          <div className="max-w-4xl mx-auto px-4">
+    <HashRouter>
+      <div className="min-h-screen bg-[#F8FAFC]">
+        {/* 导航栏 - 现代悬浮设计 */}
+        <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between h-16">
-              <div className="font-bold text-xl text-blue-600">期货刷题</div>
-              <div className="flex gap-4">
+              {/* Logo */}
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 bg-gradient-to-br from-[#0F172A] to-[#1E3A8A] rounded-lg flex items-center justify-center shadow-sm">
+                  <GraduationCap className="w-5 h-5 text-white" />
+                </div>
+                <span className="font-bold text-lg text-[#0F172A] tracking-tight">期货刷题</span>
+              </div>
+
+              {/* 导航链接 */}
+              <div className="flex items-center gap-1">
                 <NavLink
                   to="/"
                   className={({ isActive }) =>
-                    `px-3 py-2 rounded-lg ${isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`
+                    `px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      isActive
+                        ? 'bg-[#0F172A] text-white shadow-sm'
+                        : 'text-[#64748B] hover:text-[#0F172A] hover:bg-gray-100'
+                    }`
                   }
                 >
                   首页
@@ -25,18 +38,15 @@ const App: React.FC = () => {
                 <NavLink
                   to="/practice"
                   className={({ isActive }) =>
-                    `px-3 py-2 rounded-lg ${isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`
+                    `px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-[#0F172A] text-white shadow-sm'
+                        : 'text-[#64748B] hover:text-[#0F172A] hover:bg-gray-100'
+                    }`
                   }
                 >
+                  <BookOpen className="w-4 h-4" />
                   刷题
-                </NavLink>
-                <NavLink
-                  to="/bank"
-                  className={({ isActive }) =>
-                    `px-3 py-2 rounded-lg ${isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`
-                  }
-                >
-                  题库
                 </NavLink>
               </div>
             </div>
@@ -44,7 +54,7 @@ const App: React.FC = () => {
         </nav>
 
         {/* 主内容 */}
-        <main className="max-w-4xl mx-auto px-4 py-6">
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/practice" element={<Practice />} />
@@ -52,7 +62,7 @@ const App: React.FC = () => {
           </Routes>
         </main>
       </div>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
 

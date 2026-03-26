@@ -9,7 +9,13 @@ from ..schemas.practice import (
     PracticeResult,
     RatingSubmit,
     PracticeQuestion,
-    DashboardStats
+    DashboardStats,
+    FSRSStatistics,
+    MasteryDistribution,
+    RatingDistribution,
+    PracticeSessionSummaryRequest,
+    PracticeSessionSummaryResponse,
+    MasteryDelta
 )
 from ..services.fsrs_service import FSRSService
 from datetime import datetime
@@ -40,11 +46,67 @@ def get_next_questions(
             content=q.content,
             options=q.options,
             retrievability=record.retrievability if record else None,
-            next_review=record.next_review if record else None
+            next_review=record.next_review if record else None,
+            mistake_count=record.mistake_count if record else 0
         )
         result.append(pq)
 
     return result
+
+
+@router.get("/mistakes", response_model=List[PracticeQuestion])
+def get_mistake_questions(
+    limit: int = 20,
+    subject: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """获取错题列表进行专项练习"""
+    questions = fsrs_service.get_mistake_questions(db, limit, subject)
+
+    result = []
+    for q in questions:
+        record = db.query(LearningRecord).filter(
+            LearningRecord.question_id == q.id
+        ).first()
+
+        pq = PracticeQuestion(
+            id=q.id,
+            question_type=q.question_type,
+            content=q.content,
+            options=q.options,
+            retrievability=record.retrievability if record else None,
+            next_review=record.next_review if record else None,
+            mistake_count=record.mistake_count if record else 0
+        )
+        result.append(pq)
+
+    return result
+
+
+def check_answer_correct(question: Question, user_answer: str) -> bool:
+    """判断答案是否正确的通用逻辑"""
+    user_answer = user_answer.upper().strip()
+    correct_answer = question.correct_answer.upper().strip()
+
+    if question.question_type == "判断":
+        # 统一映射到 A/B 进行比较
+        mapping = {
+            "正确": "A", "错误": "B",
+            "对": "A", "错": "B",
+            "T": "A", "F": "B",
+            "A": "A", "B": "B"
+        }
+        user_val = mapping.get(user_answer, user_answer)
+        correct_val = mapping.get(correct_answer, correct_answer)
+        return user_val == correct_val
+    
+    # 针对多选，去掉空格和逗号后比较（可选，但目前多选通常存为 "ABC" 这种形式）
+    if "多选" in question.question_type or "不定项" in question.question_type:
+        u = "".join(sorted(user_answer.replace(",", "").replace(" ", "")))
+        c = "".join(sorted(correct_answer.replace(",", "").replace(" ", "")))
+        return u == c
+
+    return user_answer == correct_answer
 
 
 @router.post("/answer", response_model=PracticeResult)
@@ -57,18 +119,9 @@ def submit_answer(answer: AnswerSubmit, db: Session = Depends(get_db)):
     if not question:
         raise HTTPException(status_code=404, detail="题目不存在")
 
-    # 判断答案是否正确
-    user_answer = answer.user_answer.upper().strip()
-    correct_answer = question.correct_answer.upper().strip()
+    is_correct = check_answer_correct(question, answer.user_answer)
 
-    # 判断题特殊处理
-    if question.question_type == "判断":
-        answer_map = {"正确": "T", "错误": "F", "对": "T", "错": "F"}
-        user_answer = answer_map.get(user_answer, user_answer)
-
-    is_correct = user_answer == correct_answer
-
-    # 获取FSRS参数
+    # 获取 FSRS 参数
     record = db.query(LearningRecord).filter(
         LearningRecord.question_id == question.id
     ).first()
@@ -83,9 +136,34 @@ def submit_answer(answer: AnswerSubmit, db: Session = Depends(get_db)):
     )
 
 
+@router.post("/record-answer")
+def record_answer(answer: AnswerSubmit, db: Session = Depends(get_db)):
+    """记录答题历史（评分前调用）"""
+    question = db.query(Question).filter(
+        Question.id == answer.question_id
+    ).first()
+
+    if not question:
+        raise HTTPException(status_code=404, detail="题目不存在")
+
+    is_correct = check_answer_correct(question, answer.user_answer)
+
+    # 记录答题历史
+    history = AnswerHistory(
+        question_id=question.id,
+        user_answer=answer.user_answer,
+        is_correct=is_correct,
+        time_spent=answer.time_spent
+    )
+    db.add(history)
+    db.commit()
+
+    return {"recorded": True, "is_correct": is_correct}
+
+
 @router.post("/rate")
 def submit_rating(rating: RatingSubmit, db: Session = Depends(get_db)):
-    """提交FSRS评分，更新学习记录"""
+    """提交 FSRS 评分，更新学习记录"""
     # 获取最近一次答题记录
     answer = db.query(AnswerHistory).filter(
         AnswerHistory.question_id == rating.question_id
@@ -94,7 +172,7 @@ def submit_rating(rating: RatingSubmit, db: Session = Depends(get_db)):
     if not answer:
         raise HTTPException(status_code=400, detail="请先提交答案")
 
-    # 更新FSRS参数
+    # 更新 FSRS 参数
     record = fsrs_service.update_after_review(
         db,
         rating.question_id,
@@ -114,43 +192,11 @@ def submit_rating(rating: RatingSubmit, db: Session = Depends(get_db)):
     }
 
 
-@router.post("/record-answer")
-def record_answer(answer: AnswerSubmit, db: Session = Depends(get_db)):
-    """记录答题历史（评分前调用）"""
-    question = db.query(Question).filter(
-        Question.id == answer.question_id
-    ).first()
-
-    if not question:
-        raise HTTPException(status_code=404, detail="题目不存在")
-
-    # 判断答案是否正确
-    user_answer = answer.user_answer.upper().strip()
-    correct_answer = question.correct_answer.upper().strip()
-
-    if question.question_type == "判断":
-        answer_map = {"正确": "T", "错误": "F", "对": "T", "错": "F"}
-        user_answer = answer_map.get(user_answer, user_answer)
-
-    is_correct = user_answer == correct_answer
-
-    # 记录答题历史
-    history = AnswerHistory(
-        question_id=question.id,
-        user_answer=answer.user_answer,
-        is_correct=is_correct,
-        time_spent=answer.time_spent
-    )
-    db.add(history)
-    db.commit()
-
-    return {"recorded": True, "is_correct": is_correct}
-
-
 @router.get("/dashboard", response_model=DashboardStats)
 def get_dashboard(db: Session = Depends(get_db)):
     """获取首页统计数据"""
     stats = fsrs_service.get_statistics(db)
+    fsrs_stats = fsrs_service.get_fsrs_statistics(db)
 
     # 按科目统计 (使用 SQL 聚合查询优化 N+1 问题)
     results = db.query(
@@ -176,5 +222,69 @@ def get_dashboard(db: Session = Depends(get_db)):
         learned=stats["learned"],
         due_today=stats["due_today"],
         accuracy_rate=stats["accuracy_rate"],
-        subjects=subject_stats
+        subjects=subject_stats,
+        fsrs_stats=fsrs_stats
+    )
+@router.post("/summary", response_model=PracticeSessionSummaryResponse)
+def get_session_summary(req: PracticeSessionSummaryRequest, db: Session = Depends(get_db)):
+    """获取本次练习阶段的总结数据"""
+    if not req.question_ids:
+        return PracticeSessionSummaryResponse(
+            accuracy=0,
+            correct_count=0,
+            total_count=0,
+            total_time_spent=0,
+            mastery_delta=MasteryDelta(newly_mastered=0, moved_to_learning=0, total_learned=0)
+        )
+
+    # 为与数据库保存的 naive datetime 比较，我们需要去掉时区信息
+    start_time_naive = req.start_time.replace(tzinfo=None) if req.start_time.tzinfo else req.start_time
+
+    # 1. 统计答题正确率和时长 (基于 AnswerHistory，且在 start_time 之后)
+    # 因为用户可能多次答同一题，我们只取本次 session 范围内的
+    ans_stats = db.query(
+        func.count(AnswerHistory.id).label("total"),
+        func.sum(case((AnswerHistory.is_correct == True, 1), else_=0)).label("correct"),
+        func.sum(AnswerHistory.time_spent).label("duration")
+    ).filter(
+        AnswerHistory.question_id.in_(req.question_ids),
+        AnswerHistory.created_at >= start_time_naive
+    ).first()
+
+    correct_count = int(ans_stats.correct or 0)
+    total_answered = int(ans_stats.total or 0)
+    total_time = int(ans_stats.duration or 0)
+    accuracy = (correct_count / total_answered * 100) if total_answered > 0 else 0
+
+    # 2. 计算 FSRS 变化 (Mastery Delta)
+    # 对于这些题目，统计更新后的状态
+    records = db.query(LearningRecord).filter(
+        LearningRecord.question_id.in_(req.question_ids)
+    ).all()
+
+    newly_mastered = 0
+    moved_to_learning = 0
+    total_learned = 0
+
+    for r in records:
+        if r.review_count and r.review_count > 0:
+            total_learned += 1
+            # 如果是本次练习刚开始掌握的 (稳定性达到 15 天且本次评分不是 Again)
+            if r.stability and r.stability >= 15.0 and r.last_rating and r.last_rating > 1 and r.last_review and r.last_review >= start_time_naive:
+                newly_mastered += 1
+            
+            # 统计新转入学习的 (本次是第一次复习)
+            if r.review_count == 1 and r.last_review and r.last_review >= start_time_naive:
+                moved_to_learning += 1
+
+    return PracticeSessionSummaryResponse(
+        accuracy=round(accuracy, 1),
+        correct_count=correct_count,
+        total_count=len(req.question_ids),
+        total_time_spent=total_time,
+        mastery_delta=MasteryDelta(
+            newly_mastered=newly_mastered,
+            moved_to_learning=moved_to_learning,
+            total_learned=total_learned
+        )
     )

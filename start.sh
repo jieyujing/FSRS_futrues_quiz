@@ -67,10 +67,10 @@ fi
 echo -e "${BLUE}启动 Backend 服务...${NC}"
 cd "$BACKEND_DIR"
 source .venv/bin/activate
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8005 &
 BACKEND_PID=$!
 echo -e "${GREEN}Backend 已启动 (PID: $BACKEND_PID)${NC}"
-echo -e "${BLUE}API 地址: http://localhost:8000${NC}"
+echo -e "${BLUE}API 地址: http://localhost:8005${NC}"
 
 # 等待 Backend 启动
 sleep 2

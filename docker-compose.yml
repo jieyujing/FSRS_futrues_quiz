@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build:
+      context: ./backend
+    container_name: lklc-backend
+    volumes:
+      - ./backend/data:/app/data # 持久化 SQLite 数据库
+      - ./doc:/app/doc           # 挂载文档目录，方便后续导入
+    ports:
+      - "8005:8005"
+    restart: always
+
+  # 前端服务
+  frontend:
+    build:
+      context: ./frontend
+    container_name: lklc-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always

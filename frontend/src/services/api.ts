@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8001',
+  baseURL: `http://${window.location.hostname}:8005`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -20,6 +20,8 @@ export const questionApi = {
 export const practiceApi = {
   getNext: (limit = 20, subject?: string) =>
     api.get('/practice/next', { params: { limit, subject } }),
+  getMistakes: (limit = 20, subject?: string) =>
+    api.get('/practice/mistakes', { params: { limit, subject } }),
   answer: (data: { question_id: number; user_answer: string; time_spent?: number }) =>
     api.post('/practice/answer', data),
   recordAnswer: (data: { question_id: number; user_answer: string; time_spent?: number }) =>
@@ -27,6 +29,8 @@ export const practiceApi = {
   rate: (data: { question_id: number; rating: number }) =>
     api.post('/practice/rate', data),
   dashboard: () => api.get('/practice/dashboard'),
+  getSummary: (data: { question_ids: number[]; start_time: string }) =>
+    api.post('/practice/summary', data),
 };
 
 // 导入相关
