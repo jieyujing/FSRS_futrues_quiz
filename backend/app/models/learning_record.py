@@ -18,7 +18,7 @@ class LearningRecord(Base):
 
     # 时间记录
     last_review = Column(DateTime, comment="上次复习时间")
-    next_review = Column(DateTime, comment="下次复习时间")
+    next_review = Column(DateTime, index=True, comment="下次复习时间")
 
     # 统计
     review_count = Column(Integer, default=0, comment="复习次数")
@@ -36,7 +36,7 @@ class AnswerHistory(Base):
     id = Column(Integer, primary_key=True, index=True)
     question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
     user_answer = Column(String(50), comment="用户答案")
-    is_correct = Column(Boolean, comment="是否正确")
+    is_correct = Column(Boolean, index=True, comment="是否正确")
     rating = Column(Integer, comment="FSRS评分 1-4")
     time_spent = Column(Integer, comment="答题时长（秒）")
     created_at = Column(DateTime, server_default=func.now())

@@ -8,7 +8,7 @@ class Question(Base):
     __tablename__ = "questions"
 
     id = Column(Integer, primary_key=True, index=True)
-    subject = Column(String(50), nullable=False, comment="科目：基础知识/法律法规")
+    subject = Column(String(50), nullable=False, index=True, comment="科目：基础知识/法律法规")
     source = Column(String(200), nullable=False, comment="来源文件名")
     question_type = Column(String(20), nullable=False, comment="题型：单选/多选/判断")
     question_number = Column(Integer, comment="原题号")
