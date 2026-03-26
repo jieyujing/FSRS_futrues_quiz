@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func, case
 from typing import List, Optional
 from ..database import get_db
 from ..models import Question, LearningRecord, AnswerHistory
@@ -151,25 +152,24 @@ def get_dashboard(db: Session = Depends(get_db)):
     """获取首页统计数据"""
     stats = fsrs_service.get_statistics(db)
 
-    # 按科目统计
-    subjects = db.query(Question.subject).distinct().all()
-    subject_stats = []
+    # 按科目统计 (使用 SQL 聚合查询优化 N+1 问题)
+    results = db.query(
+        Question.subject,
+        func.count(Question.id).label("total"),
+        func.sum(case((LearningRecord.review_count > 0, 1), else_=0)).label("learned")
+    ).outerjoin(
+        LearningRecord, Question.id == LearningRecord.question_id
+    ).group_by(Question.subject).all()
 
-    for (subject_name,) in subjects:
-        total = db.query(Question).filter(
-            Question.subject == subject_name
-        ).count()
-        learned = db.query(LearningRecord).join(Question).filter(
-            Question.subject == subject_name,
-            LearningRecord.review_count > 0
-        ).count()
-
-        subject_stats.append({
-            "name": subject_name,
-            "total": total,
-            "learned": learned,
-            "progress": round(learned / total * 100, 1) if total > 0 else 0
-        })
+    subject_stats = [
+        {
+            "name": row.subject,
+            "total": row.total,
+            "learned": int(row.learned or 0),
+            "progress": round(int(row.learned or 0) / row.total * 100, 1) if row.total > 0 else 0
+        }
+        for row in results
+    ]
 
     return DashboardStats(
         total_questions=stats["total_questions"],
