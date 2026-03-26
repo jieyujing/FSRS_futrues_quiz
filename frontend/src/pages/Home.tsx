@@ -19,9 +19,15 @@ interface DashboardStats {
 const Home: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [defaultSubject, setDefaultSubject] = useState<string | null>(null);
 
   useEffect(() => {
     loadStats();
+    // 读取记录的默认科目
+    const saved = localStorage.getItem('f_practice_default_subject');
+    if (saved) {
+      setDefaultSubject(saved);
+    }
   }, []);
 
   const loadStats = async () => {
@@ -64,11 +70,34 @@ const Home: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">期货刷题助手</h1>
         <Link
           to="/practice"
+          state={{ subject: defaultSubject }}
           className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
         >
           开始刷题
         </Link>
       </div>
+
+      {/* 继续练习入口 */}
+      {defaultSubject && (
+        <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-200 rounded-lg">
+              <BookOpen className="w-5 h-5 text-blue-700" />
+            </div>
+            <div>
+              <p className="text-xs text-blue-600 font-medium uppercase tracking-wider">继续上次练习</p>
+              <h3 className="text-lg font-bold text-blue-900">{defaultSubject}</h3>
+            </div>
+          </div>
+          <Link
+            to="/practice"
+            state={{ subject: defaultSubject }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            立即执行
+          </Link>
+        </div>
+      )}
 
       {/* 统计卡片 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -126,20 +155,26 @@ const Home: React.FC = () => {
         <h2 className="text-lg font-medium mb-4">学习进度</h2>
         <div className="space-y-4">
           {stats.subjects.map((subject) => (
-            <div key={subject.name}>
+            <Link 
+              key={subject.name} 
+              to="/practice" 
+              state={{ subject: subject.name }}
+              onClick={() => localStorage.setItem('f_practice_default_subject', subject.name)}
+              className="block group"
+            >
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600">{subject.name}</span>
+                <span className="text-gray-600 group-hover:text-blue-600 transition-colors">{subject.name}</span>
                 <span className="text-gray-500">
                   {subject.learned} / {subject.total}
                 </span>
               </div>
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-500"
+                  className="h-full bg-blue-500 group-hover:bg-blue-600 transition-all"
                   style={{ width: `${subject.progress}%` }}
                 />
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

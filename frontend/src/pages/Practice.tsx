@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { practiceApi } from '../services/api';
 import QuestionCard from '../components/QuestionCard';
 import AnswerResult from '../components/AnswerResult';
@@ -31,11 +32,16 @@ const Practice: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
-  const loadQuestions = async () => {
+  const currentSubject = useMemo(() => {
+    return (location.state as any)?.subject || localStorage.getItem('f_practice_default_subject') || undefined;
+  }, [location.state]);
+
+  const loadQuestions = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await practiceApi.getNext(20);
+      const response = await practiceApi.getNext(20, currentSubject);
       setState(prev => ({
         ...prev,
         questions: response.data,
@@ -48,7 +54,7 @@ const Practice: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentSubject]);
 
   useEffect(() => {
     loadQuestions();
