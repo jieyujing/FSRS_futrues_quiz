@@ -56,21 +56,31 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     }
 
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         {options &&
           Object.entries(options).map(([key, value]) => (
             <button
               key={key}
               onClick={() => handleSelect(key)}
               disabled={disabled}
-              className={`w-full p-4 text-left rounded-lg border transition-all ${
+              className={`w-full p-5 text-left rounded-2xl border-2 transition-all duration-200 group flex items-start gap-4 ${
                 selected === key
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                  ? 'border-blue-500 bg-blue-50 shadow-sm'
+                  : 'border-gray-100 hover:border-gray-300 hover:bg-gray-50'
+              } ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:-translate-y-0.5'}`}
             >
-              <span className="font-medium mr-2">{key}.</span>
-              {value}
+              <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm shrink-0 transition-colors ${
+                selected === key
+                  ? 'border-blue-500 bg-blue-500 text-white'
+                  : 'border-gray-200 text-gray-400 group-hover:border-gray-300 group-hover:text-gray-500'
+              }`}>
+                {key}
+              </div>
+              <div className={`text-base leading-relaxed ${
+                selected === key ? 'text-blue-900 font-medium' : 'text-gray-700'
+              }`}>
+                {value}
+              </div>
             </button>
           ))}
       </div>
