@@ -1,6 +1,7 @@
 from fsrs import Scheduler, Card, Rating, State
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
+from sqlalchemy import func, case
 from typing import List, Optional
 from ..models import Question, LearningRecord, AnswerHistory
 
@@ -131,23 +132,26 @@ class FSRSService:
 
     def get_statistics(self, db: Session) -> dict:
         """获取学习统计"""
+        # 1. 题目与学习进度统计 (已增加索引)
         total = db.query(Question).count()
         learned = db.query(LearningRecord).filter(
             LearningRecord.review_count > 0
         ).count()
 
-        # 今日到期
-        today = datetime.now().date()
+        # 2. 今日到期统计 (已增加索引)
         due_today = db.query(LearningRecord).filter(
             LearningRecord.next_review != None,
             LearningRecord.next_review <= datetime.now()
         ).count()
 
-        # 正确率
-        total_answers = db.query(AnswerHistory).count()
-        correct_answers = db.query(AnswerHistory).filter(
-            AnswerHistory.is_correct == True
-        ).count()
+        # 3. 答题正确率统计 (合并为单条查询)
+        ans_stats = db.query(
+            func.count(AnswerHistory.id).label("total"),
+            func.sum(case((AnswerHistory.is_correct == True, 1), else_=0)).label("correct")
+        ).first()
+        
+        total_answers = ans_stats.total or 0
+        correct_answers = int(ans_stats.correct or 0)
         accuracy = correct_answers / total_answers if total_answers > 0 else 0
 
         return {
