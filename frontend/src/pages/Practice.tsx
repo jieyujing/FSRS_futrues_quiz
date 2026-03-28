@@ -239,6 +239,18 @@ const Practice: React.FC = () => {
     }
   }, [state.currentIndex, state.questions.length, state.lastAnswer, state.hasRated, fetchSummary]);
 
+  const handleIgnore = useCallback(async () => {
+    if (!state.lastAnswer) return;
+    
+    try {
+      await practiceApi.markIgnored(state.lastAnswer.questionId);
+      // 标记为忽略后，直接进入下一题
+      handleNext();
+    } catch (error) {
+      console.error('标记忽略失败:', error);
+    }
+  }, [state.lastAnswer, handleNext]);
+
   const currentQuestion = state.questions[state.currentIndex];
 
   if (loading) {
@@ -329,6 +341,7 @@ const Practice: React.FC = () => {
             correctAnswer={state.lastAnswer.correctAnswer}
             explanation={state.lastAnswer.explanation}
             onRate={handleRate}
+            onIgnore={handleIgnore}
             onNext={handleNext}
           />
         )

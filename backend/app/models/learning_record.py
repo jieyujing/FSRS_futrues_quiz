@@ -24,6 +24,7 @@ class LearningRecord(Base):
     review_count = Column(Integer, default=0, comment="复习次数")
     mistake_count = Column(Integer, default=0, comment="错误次数")
     last_rating = Column(Integer, comment="最近评分 1-4")
+    is_ignored = Column(Boolean, default=False, comment="是否忽略/过滤（不再练习）")
 
     # 关系
     question = relationship("Question", backref="learning_record")

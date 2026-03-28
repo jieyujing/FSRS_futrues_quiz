@@ -13,6 +13,7 @@ interface AnswerResultProps {
   correctAnswer: string;
   explanation?: string;
   onRate: (rating: number) => void;
+  onIgnore: () => void;
   onNext: () => void;
 }
 
@@ -23,6 +24,7 @@ const AnswerResult: React.FC<AnswerResultProps> = ({
   correctAnswer,
   explanation,
   onRate,
+  onIgnore,
   onNext,
 }) => {
   const optionEntries = question.options ? Object.entries(question.options) : [];
@@ -31,29 +33,45 @@ const AnswerResult: React.FC<AnswerResultProps> = ({
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 animate-fade-in-up">
       {/* 结果头部 */}
       <div
-        className={`flex items-center gap-4 p-5 rounded-xl mb-6 ${
+        className={`flex items-center justify-between p-5 rounded-xl mb-6 ${
           isCorrect ? 'bg-emerald-50' : 'bg-red-50'
         }`}
       >
-        <div
-          className={`p-2 rounded-xl ${isCorrect ? 'bg-emerald-100' : 'bg-red-100'}`}
-        >
-          {isCorrect ? (
-            <CheckCircle className="w-6 h-6 text-emerald-600" />
-          ) : (
-            <XCircle className="w-6 h-6 text-red-600" />
-          )}
-        </div>
-        <div>
-          <span
-            className={`text-lg font-bold ${isCorrect ? 'text-emerald-700' : 'text-red-700'}`}
+        <div className="flex items-center gap-4">
+          <div
+            className={`p-2 rounded-xl ${isCorrect ? 'bg-emerald-100' : 'bg-red-100'}`}
           >
-            {isCorrect ? '回答正确' : '回答错误'}
-          </span>
-          <p className={`text-sm mt-0.5 ${isCorrect ? 'text-emerald-600' : 'text-red-600'}`}>
-            {isCorrect ? '继续保持，你做得很棒！' : '别灰心，再接再厉！'}
-          </p>
+            {isCorrect ? (
+              <CheckCircle className="w-6 h-6 text-emerald-600" />
+            ) : (
+              <XCircle className="w-6 h-6 text-red-600" />
+            )}
+          </div>
+          <div>
+            <span
+              className={`text-lg font-bold ${isCorrect ? 'text-emerald-700' : 'text-red-700'}`}
+            >
+              {isCorrect ? '回答正确' : '回答错误'}
+            </span>
+            <p className={`text-sm mt-0.5 ${isCorrect ? 'text-emerald-600' : 'text-red-600'}`}>
+              {isCorrect ? '继续保持，你做得很棒！' : '别灰心，再接再厉！'}
+            </p>
+          </div>
         </div>
+
+        {isCorrect && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onIgnore();
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-emerald-200 text-emerald-600 rounded-lg text-xs font-bold hover:bg-emerald-50 transition-colors shadow-sm cursor-pointer"
+            title="太简单了，以后不再练习此题"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            从此过滤
+          </button>
+        )}
       </div>
 
       {/* 题目内容 */}

@@ -202,7 +202,7 @@ def get_dashboard(db: Session = Depends(get_db)):
     results = db.query(
         Question.subject,
         func.count(Question.id).label("total"),
-        func.sum(case((LearningRecord.review_count > 0, 1), else_=0)).label("learned")
+        func.sum(case(((LearningRecord.review_count > 0) | (LearningRecord.is_ignored == True), 1), else_=0)).label("learned")
     ).outerjoin(
         LearningRecord, Question.id == LearningRecord.question_id
     ).group_by(Question.subject).all()
@@ -225,6 +225,13 @@ def get_dashboard(db: Session = Depends(get_db)):
         subjects=subject_stats,
         fsrs_stats=fsrs_stats
     )
+@router.post("/ignore/{question_id}")
+def mark_question_ignored(question_id: int, db: Session = Depends(get_db)):
+    """将题目标记为已过滤（太简单，不再练习）"""
+    fsrs_service.mark_as_ignored(db, question_id)
+    return {"message": "已标记为不再练习"}
+
+
 @router.post("/summary", response_model=PracticeSessionSummaryResponse)
 def get_session_summary(req: PracticeSessionSummaryRequest, db: Session = Depends(get_db)):
     """获取本次练习阶段的总结数据"""

@@ -48,6 +48,7 @@ class FSRSService:
                 base_query.join(LearningRecord)
                 .filter(
                     LearningRecord.next_review <= now,
+                    LearningRecord.is_ignored == False,
                     (Question.question_type == q_type) | (Question.question_type.like(f"%{q_type}%"))
                 )
                 .order_by(LearningRecord.retrievability.asc())
@@ -115,6 +116,7 @@ class FSRSService:
                 base_query.join(LearningRecord)
                 .filter(
                     LearningRecord.mistake_count > 0,
+                    LearningRecord.is_ignored == False,
                     (Question.question_type == q_type) | (Question.question_type.like(f"%{q_type}%"))
                 )
                 .order_by(LearningRecord.mistake_count.desc(), func.random())
@@ -158,6 +160,26 @@ class FSRSService:
 
         random.shuffle(all_selected)
         return all_selected[:limit]
+
+    def mark_as_ignored(self, db: Session, question_id: int) -> bool:
+        """将其标记为“已过滤/太简单”，不再练习"""
+        record = db.query(LearningRecord).filter(
+            LearningRecord.question_id == question_id
+        ).first()
+
+        if not record:
+            record = LearningRecord(
+                question_id=question_id,
+                is_ignored=True,
+                next_review=datetime.now() + timedelta(days=3650) # 设置为很久以后复习
+            )
+            db.add(record)
+        else:
+            record.is_ignored = True
+            record.next_review = datetime.now() + timedelta(days=3650)
+            
+        db.commit()
+        return True
 
     def update_after_review(
         self,
@@ -246,13 +268,14 @@ class FSRSService:
         # 1. 题目与学习进度统计 (已增加索引)
         total = db.query(Question).count()
         learned = db.query(LearningRecord).filter(
-            LearningRecord.review_count > 0
+            (LearningRecord.review_count > 0) | (LearningRecord.is_ignored == True)
         ).count()
 
         # 2. 今日到期统计 (已增加索引)
         due_today = db.query(LearningRecord).filter(
             LearningRecord.next_review != None,
-            LearningRecord.next_review <= datetime.now()
+            LearningRecord.next_review <= datetime.now(),
+            LearningRecord.is_ignored == False
         ).count()
 
         # 3. 答题正确率统计 (合并为单条查询)
@@ -283,12 +306,12 @@ class FSRSService:
         # S < 5:   正在学习
         # 另外通过 R < 0.7 判定需要复习
         master_stats = db.query(
-            func.sum(case(((LearningRecord.stability >= 15.0) & (LearningRecord.retrievability >= 0.7), 1), else_=0)).label("mastered"),
-            func.sum(case(((LearningRecord.stability >= 5.0) & (LearningRecord.stability < 15.0) & (LearningRecord.retrievability >= 0.7), 1), else_=0)).label("proficient"),
-            func.sum(case(((LearningRecord.stability < 5.0) & (LearningRecord.retrievability >= 0.7), 1), else_=0)).label("learning"),
-            func.sum(case((LearningRecord.retrievability < 0.7, 1), else_=0)).label("review_needed")
+            func.sum(case(((LearningRecord.is_ignored == True) | ((LearningRecord.stability >= 15.0) & (LearningRecord.retrievability >= 0.7)), 1), else_=0)).label("mastered"),
+            func.sum(case(((LearningRecord.stability >= 5.0) & (LearningRecord.stability < 15.0) & (LearningRecord.retrievability >= 0.7) & (LearningRecord.is_ignored == False), 1), else_=0)).label("proficient"),
+            func.sum(case(((LearningRecord.stability < 5.0) & (LearningRecord.retrievability >= 0.7) & (LearningRecord.is_ignored == False), 1), else_=0)).label("learning"),
+            func.sum(case(((LearningRecord.retrievability < 0.7) & (LearningRecord.is_ignored == False), 1), else_=0)).label("review_needed")
         ).filter(
-            LearningRecord.review_count > 0
+            (LearningRecord.review_count > 0) | (LearningRecord.is_ignored == True)
         ).first()
 
         mastered = int(master_stats.mastered or 0) if master_stats else 0

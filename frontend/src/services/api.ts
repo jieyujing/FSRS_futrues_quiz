@@ -31,6 +31,8 @@ export const practiceApi = {
   dashboard: () => api.get('/practice/dashboard'),
   getSummary: (data: { question_ids: number[]; start_time: string }) =>
     api.post('/practice/summary', data),
+  markIgnored: (questionId: number) =>
+    api.post(`/practice/ignore/${questionId}`),
 };
 
 // 导入相关
