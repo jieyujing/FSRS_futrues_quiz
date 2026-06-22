@@ -1,0 +1,342 @@
+{
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/__init__.py": {
+    "mtime": 1776734169.9767668,
+    "ast_hash": "b27d2c973dadb414051a78644bb3f95d",
+    "semantic_hash": "b27d2c973dadb414051a78644bb3f95d"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/api/__init__.py": {
+    "mtime": 1776734169.9768722,
+    "ast_hash": "d2dbccbf7aaed80f4646d7b71ac30a37",
+    "semantic_hash": "d2dbccbf7aaed80f4646d7b71ac30a37"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/api/flashcards.py": {
+    "mtime": 1776734169.9769616,
+    "ast_hash": "101d1dad866532b7f9d27217fc240145",
+    "semantic_hash": "101d1dad866532b7f9d27217fc240145"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/api/import_api.py": {
+    "mtime": 1776734169.9770336,
+    "ast_hash": "65455358bcc2c65e1227496ec8df2318",
+    "semantic_hash": "65455358bcc2c65e1227496ec8df2318"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/api/practice.py": {
+    "mtime": 1776734169.9771245,
+    "ast_hash": "645c5d57dad99ff0950489e0b789c99d",
+    "semantic_hash": "645c5d57dad99ff0950489e0b789c99d"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/api/questions.py": {
+    "mtime": 1776734169.9771907,
+    "ast_hash": "a8c9e70f96adaec70afc42acb98fd1c6",
+    "semantic_hash": "a8c9e70f96adaec70afc42acb98fd1c6"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/core/__init__.py": {
+    "mtime": 1776734169.9772613,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/core/config.py": {
+    "mtime": 1776734169.9773376,
+    "ast_hash": "3c6795472913ebbb59034e83597a0a69",
+    "semantic_hash": "3c6795472913ebbb59034e83597a0a69"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/database.py": {
+    "mtime": 1776734169.977402,
+    "ast_hash": "fb49f68202f0df9dd9c564c45c11bb14",
+    "semantic_hash": "fb49f68202f0df9dd9c564c45c11bb14"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/main.py": {
+    "mtime": 1776734169.9774687,
+    "ast_hash": "0d864b94b2573fd7c7fcda4276083661",
+    "semantic_hash": "0d864b94b2573fd7c7fcda4276083661"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/models/__init__.py": {
+    "mtime": 1776734169.9775658,
+    "ast_hash": "f0861d85cc225208b59cba7e1d7f110a",
+    "semantic_hash": "f0861d85cc225208b59cba7e1d7f110a"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/models/flashcard.py": {
+    "mtime": 1776734169.9776297,
+    "ast_hash": "57553d966a6ef278d3ac4a90d552fc0d",
+    "semantic_hash": "57553d966a6ef278d3ac4a90d552fc0d"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/models/learning_record.py": {
+    "mtime": 1776734169.9776943,
+    "ast_hash": "2220057564a4bffa378eec60e3fd82e3",
+    "semantic_hash": "2220057564a4bffa378eec60e3fd82e3"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/models/question.py": {
+    "mtime": 1776734169.977754,
+    "ast_hash": "07fe5500d2a81c6b5dc486bda30f6f6d",
+    "semantic_hash": "07fe5500d2a81c6b5dc486bda30f6f6d"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/schemas/__init__.py": {
+    "mtime": 1776734169.9778636,
+    "ast_hash": "db59d2e7039852792470182bb34fc3da",
+    "semantic_hash": "db59d2e7039852792470182bb34fc3da"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/schemas/flashcard.py": {
+    "mtime": 1776734169.9779289,
+    "ast_hash": "3d9a7cf0de5c4a966a1bf6b204c379f1",
+    "semantic_hash": "3d9a7cf0de5c4a966a1bf6b204c379f1"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/schemas/practice.py": {
+    "mtime": 1776734169.9779997,
+    "ast_hash": "ba88e5217ed1dd9210c5024176c78d63",
+    "semantic_hash": "ba88e5217ed1dd9210c5024176c78d63"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/schemas/question.py": {
+    "mtime": 1776734169.9780629,
+    "ast_hash": "b46d5bfd1c5da667ec6b91f74b493730",
+    "semantic_hash": "b46d5bfd1c5da667ec6b91f74b493730"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/services/__init__.py": {
+    "mtime": 1776734169.9781647,
+    "ast_hash": "57c01d27ee5acb78d1586df47e0ecdf0",
+    "semantic_hash": "57c01d27ee5acb78d1586df47e0ecdf0"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/services/agent_parser.py": {
+    "mtime": 1776734169.9782522,
+    "ast_hash": "02d54c1a2526f297c9e8a74d98e47ef8",
+    "semantic_hash": "02d54c1a2526f297c9e8a74d98e47ef8"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/services/file_reader.py": {
+    "mtime": 1776734169.9783158,
+    "ast_hash": "044727a61b103397120fd02bc8ad59d4",
+    "semantic_hash": "044727a61b103397120fd02bc8ad59d4"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/services/fsrs_service.py": {
+    "mtime": 1776734169.9784138,
+    "ast_hash": "dde6f85c20be69fc19df71b08399dc1e",
+    "semantic_hash": "dde6f85c20be69fc19df71b08399dc1e"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/services/llm_card_service.py": {
+    "mtime": 1776734169.9785004,
+    "ast_hash": "8e6e2d3feaf3652f39ede8f263a5d8a5",
+    "semantic_hash": "8e6e2d3feaf3652f39ede8f263a5d8a5"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/services/metadata_extractor.py": {
+    "mtime": 1776734169.9785662,
+    "ast_hash": "f75b0f239cdffe34aee5f28e9453845a",
+    "semantic_hash": "f75b0f239cdffe34aee5f28e9453845a"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/app/services/parser_service.py": {
+    "mtime": 1776734169.9786346,
+    "ast_hash": "97fa789ec42c0b31ef4b1359e6041a55",
+    "semantic_hash": "97fa789ec42c0b31ef4b1359e6041a55"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/scripts/__init__.py": {
+    "mtime": 1776734169.9787712,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/scripts/batch_convert_flashcards.py": {
+    "mtime": 1776734169.9788594,
+    "ast_hash": "aa12931f66ef7b335e906664d3f63791",
+    "semantic_hash": "aa12931f66ef7b335e906664d3f63791"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/scripts/import_questions.py": {
+    "mtime": 1776734169.9789376,
+    "ast_hash": "896647bcc0979aed0380a8582a418a18",
+    "semantic_hash": "896647bcc0979aed0380a8582a418a18"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/eslint.config.js": {
+    "mtime": 1776734170.0033946,
+    "ast_hash": "b8893da386a89dfd3672dad848f4ec7e",
+    "semantic_hash": "b8893da386a89dfd3672dad848f4ec7e"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/package.json": {
+    "mtime": 1776734170.0038598,
+    "ast_hash": "aa51af5feb28b516cedbdea56d7fb51f",
+    "semantic_hash": "aa51af5feb28b516cedbdea56d7fb51f"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/App.tsx": {
+    "mtime": 1776734170.0042768,
+    "ast_hash": "b5f1490469cda7bfd651d67f67f81b97",
+    "semantic_hash": "b5f1490469cda7bfd651d67f67f81b97"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/components/AnswerResult.tsx": {
+    "mtime": 1776734170.004753,
+    "ast_hash": "ece241edd00d8659ee01f006c96f1273",
+    "semantic_hash": "ece241edd00d8659ee01f006c96f1273"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/components/Flashcard.tsx": {
+    "mtime": 1776734170.004837,
+    "ast_hash": "8250ed6f6430b0d123567565fb6afb99",
+    "semantic_hash": "8250ed6f6430b0d123567565fb6afb99"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/components/PracticeSummary.tsx": {
+    "mtime": 1776734170.0049264,
+    "ast_hash": "4997e4d20ecda89e7873b019392c0056",
+    "semantic_hash": "4997e4d20ecda89e7873b019392c0056"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/components/QuestionCard.tsx": {
+    "mtime": 1776734170.0050132,
+    "ast_hash": "9dd74294b951900cac3ad366ba5eca06",
+    "semantic_hash": "9dd74294b951900cac3ad366ba5eca06"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/main.tsx": {
+    "mtime": 1776734170.0051384,
+    "ast_hash": "70656562f7903b0da3761e0c2524e982",
+    "semantic_hash": "70656562f7903b0da3761e0c2524e982"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/pages/Home.tsx": {
+    "mtime": 1776734170.0052745,
+    "ast_hash": "04b97bfa42d5b5370b063da820e9b655",
+    "semantic_hash": "04b97bfa42d5b5370b063da820e9b655"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/pages/Practice.tsx": {
+    "mtime": 1776734170.0053816,
+    "ast_hash": "7e1f394a6d715dd97250ff2c68e91188",
+    "semantic_hash": "7e1f394a6d715dd97250ff2c68e91188"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/pages/QuestionBank.tsx": {
+    "mtime": 1776734170.0054698,
+    "ast_hash": "4a70d665bd3a2c5c5961612212c74911",
+    "semantic_hash": "4a70d665bd3a2c5c5961612212c74911"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/services/api.ts": {
+    "mtime": 1776734170.0055912,
+    "ast_hash": "7313248a7581bc9e45769c399eb6087c",
+    "semantic_hash": "7313248a7581bc9e45769c399eb6087c"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/tsconfig.app.json": {
+    "mtime": 1776734170.0056615,
+    "ast_hash": "1079e34c0d979ff4e9c96e544b296d8f",
+    "semantic_hash": "1079e34c0d979ff4e9c96e544b296d8f"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/tsconfig.json": {
+    "mtime": 1776734170.0057254,
+    "ast_hash": "a3d39fa780ebff65444de257f291ce6c",
+    "semantic_hash": "a3d39fa780ebff65444de257f291ce6c"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/tsconfig.node.json": {
+    "mtime": 1776734170.0057943,
+    "ast_hash": "eec85c9d7c6b599801557f1afd86672c",
+    "semantic_hash": "eec85c9d7c6b599801557f1afd86672c"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/vite.config.ts": {
+    "mtime": 1776734170.0058577,
+    "ast_hash": "6b84bdfa5e184cc88f0c85a5c5f0352f",
+    "semantic_hash": "6b84bdfa5e184cc88f0c85a5c5f0352f"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/start.sh": {
+    "mtime": 1776734170.0059254,
+    "ast_hash": "263bb619629cc46bca2db41c6e1deb3b",
+    "semantic_hash": "263bb619629cc46bca2db41c6e1deb3b"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/README.md": {
+    "mtime": 1776734169.9764957,
+    "ast_hash": "aa7ce81994bffd670e673804cab525be",
+    "semantic_hash": "aa7ce81994bffd670e673804cab525be"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/backend/requirements.txt": {
+    "mtime": 1776734169.9787014,
+    "ast_hash": "da726e3d72e53bf1775a1d9f8fa1101c",
+    "semantic_hash": "da726e3d72e53bf1775a1d9f8fa1101c"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docker-compose.yml": {
+    "mtime": 1776734170.0012696,
+    "ast_hash": "92a65ebef074bcb542a29ef5ec71f3a1",
+    "semantic_hash": "92a65ebef074bcb542a29ef5ec71f3a1"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/plans/2026-03-24-question-import-design.md": {
+    "mtime": 1776734170.001715,
+    "ast_hash": "f30a204694f309ddaba616387556a86a",
+    "semantic_hash": "f30a204694f309ddaba616387556a86a"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/plans/2026-03-24-question-import-implementation.md": {
+    "mtime": 1776734170.0018208,
+    "ast_hash": "f4fcb3b81de63c1503ad8f2dc7e00aa9",
+    "semantic_hash": "f4fcb3b81de63c1503ad8f2dc7e00aa9"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/plans/2026-03-24-quiz-app-design.md": {
+    "mtime": 1776734170.002029,
+    "ast_hash": "bbf101c27c4ef1ed3a132485fad9fb6a",
+    "semantic_hash": "bbf101c27c4ef1ed3a132485fad9fb6a"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/plans/2026-03-24-quiz-app-implementation.md": {
+    "mtime": 1776734170.0021641,
+    "ast_hash": "d7a7a0ef16ca81b02190df7b8c3f3ce6",
+    "semantic_hash": "d7a7a0ef16ca81b02190df7b8c3f3ce6"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/superpowers/plans/2026-03-26-performance-optimization-dashboard.md": {
+    "mtime": 1776734170.0023582,
+    "ast_hash": "6944a7d594f2116d94d4e170767abd6a",
+    "semantic_hash": "6944a7d594f2116d94d4e170767abd6a"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/superpowers/plans/2026-03-26-practice-summary-plan.md": {
+    "mtime": 1776734170.0024562,
+    "ast_hash": "4865b4b1e1f3a764bc4c06fecb1aa371",
+    "semantic_hash": "4865b4b1e1f3a764bc4c06fecb1aa371"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/superpowers/plans/2026-03-26-ui-overhaul-default-bank.md": {
+    "mtime": 1776734170.002546,
+    "ast_hash": "e23dbccd30a35f4365761dd60992f2db",
+    "semantic_hash": "e23dbccd30a35f4365761dd60992f2db"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/superpowers/plans/2026-03-28-llm-flashcard-transformation-plan.md": {
+    "mtime": 1776734170.0026252,
+    "ast_hash": "5daf3dad6616f34e1fbcb677c1eabd92",
+    "semantic_hash": "5daf3dad6616f34e1fbcb677c1eabd92"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/superpowers/specs/2026-03-26-performance-optimization-dashboard.md": {
+    "mtime": 1776734170.002743,
+    "ast_hash": "f7c014f8e31e0dc54fb7e930f2c52ca0",
+    "semantic_hash": "f7c014f8e31e0dc54fb7e930f2c52ca0"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/superpowers/specs/2026-03-26-practice-summary-design.md": {
+    "mtime": 1776734170.0028162,
+    "ast_hash": "f8df54704b669fddfc24b6278c989497",
+    "semantic_hash": "f8df54704b669fddfc24b6278c989497"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/superpowers/specs/2026-03-26-ui-overhaul-default-bank.md": {
+    "mtime": 1776734170.0028844,
+    "ast_hash": "f70925b0168a0a54a72ba52f428e28f4",
+    "semantic_hash": "f70925b0168a0a54a72ba52f428e28f4"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/docs/superpowers/specs/2026-03-28-llm-flashcard-transformation-design.md": {
+    "mtime": 1776734170.0029576,
+    "ast_hash": "703ec5980fd5fb227425c94c4ff81ceb",
+    "semantic_hash": "703ec5980fd5fb227425c94c4ff81ceb"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/README.md": {
+    "mtime": 1776734170.0033276,
+    "ast_hash": "f6e3faf55d738cf2affe1b44195f27cf",
+    "semantic_hash": "f6e3faf55d738cf2affe1b44195f27cf"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/index.html": {
+    "mtime": 1776734170.0034614,
+    "ast_hash": "33bd262affcefea92f1509cda449a19c",
+    "semantic_hash": "33bd262affcefea92f1509cda449a19c"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/doc/\u671f\u8d27\u6cd5\u89c4\u7b2c5\u5957.pdf": {
+    "mtime": 1776734170.001175,
+    "ast_hash": "c189ad9689a003a199b013b65056c6e3",
+    "semantic_hash": "c189ad9689a003a199b013b65056c6e3"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/public/favicon.svg": {
+    "mtime": 1776734170.004001,
+    "ast_hash": "7e840862161341271697daa99a40d76b",
+    "semantic_hash": "7e840862161341271697daa99a40d76b"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/public/icons.svg": {
+    "mtime": 1776734170.0040915,
+    "ast_hash": "3b4fcfcf393eca4d264dca4a4663bc37",
+    "semantic_hash": "3b4fcfcf393eca4d264dca4a4663bc37"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/assets/hero.png": {
+    "mtime": 1776734170.0044308,
+    "ast_hash": "5cf2b0762834cdddc0dd3ec1397b5011",
+    "semantic_hash": "5cf2b0762834cdddc0dd3ec1397b5011"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/assets/react.svg": {
+    "mtime": 1776734170.0045273,
+    "ast_hash": "f0402b67b6ce880f65666bb49e841696",
+    "semantic_hash": "f0402b67b6ce880f65666bb49e841696"
+  },
+  "/Volumes/TiPlus7100/Project /FSRS_futrues_quiz/frontend/src/assets/vite.svg": {
+    "mtime": 1776734170.0046108,
+    "ast_hash": "9960a24288958394ac50e57ff638b036",
+    "semantic_hash": "9960a24288958394ac50e57ff638b036"
+  }
+}
