@@ -34,12 +34,16 @@ def get_next_questions(
     """获取下一批练习题目"""
     questions = fsrs_service.get_next_questions(db, limit, subject)
 
+    # 批量查询所有 LearningRecord，避免 N+1 问题
+    question_ids = [q.id for q in questions]
+    records = db.query(LearningRecord).filter(
+        LearningRecord.question_id.in_(question_ids)
+    ).all() if question_ids else []
+    record_map = {r.question_id: r for r in records}
+
     result = []
     for q in questions:
-        record = db.query(LearningRecord).filter(
-            LearningRecord.question_id == q.id
-        ).first()
-
+        record = record_map.get(q.id)
         pq = PracticeQuestion(
             id=q.id,
             question_type=q.question_type,
@@ -63,12 +67,16 @@ def get_mistake_questions(
     """获取错题列表进行专项练习"""
     questions = fsrs_service.get_mistake_questions(db, limit, subject)
 
+    # 批量查询所有 LearningRecord，避免 N+1 问题
+    question_ids = [q.id for q in questions]
+    records = db.query(LearningRecord).filter(
+        LearningRecord.question_id.in_(question_ids)
+    ).all() if question_ids else []
+    record_map = {r.question_id: r for r in records}
+
     result = []
     for q in questions:
-        record = db.query(LearningRecord).filter(
-            LearningRecord.question_id == q.id
-        ).first()
-
+        record = record_map.get(q.id)
         pq = PracticeQuestion(
             id=q.id,
             question_type=q.question_type,

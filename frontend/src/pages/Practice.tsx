@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { practiceApi } from '../services/api';
 import QuestionCard from '../components/QuestionCard';
@@ -35,6 +35,11 @@ interface PracticeState {
   questionStartTime: number;
 }
 
+/** 预加载触发阈值：剩余题目少于此数时开始预取下一批 */
+const PREFETCH_THRESHOLD = 5;
+/** 每批加载的题目数量 */
+const BATCH_SIZE = 20;
+
 const Practice: React.FC = () => {
   const navigate = useNavigate();
   const [state, setState] = useState<PracticeState>({
@@ -52,7 +57,12 @@ const Practice: React.FC = () => {
     questionStartTime: Date.now(),
   });
 
+  // loading 仅用于首次加载（页面刚挂载时）和总结阶段
   const [loading, setLoading] = useState(true);
+  // 预加载相关状态
+  const [prefetchedQuestions, setPrefetchedQuestions] = useState<Question[]>([]);
+  const isPrefetching = useRef(false);
+
   const location = useLocation();
 
   const currentSubject = useMemo(() => {
@@ -66,10 +76,10 @@ const Practice: React.FC = () => {
   const loadQuestions = useCallback(async () => {
     setLoading(true);
     try {
-      const response = currentMode === 'mistake' 
-        ? await practiceApi.getMistakes(20, currentSubject)
-        : await practiceApi.getNext(20, currentSubject);
-      
+      const response = currentMode === 'mistake'
+        ? await practiceApi.getMistakes(BATCH_SIZE, currentSubject)
+        : await practiceApi.getNext(BATCH_SIZE, currentSubject);
+
       setState(prev => ({
         ...prev,
         questions: response.data,
@@ -85,6 +95,8 @@ const Practice: React.FC = () => {
         summaryData: null,
         questionStartTime: Date.now(),
       }));
+      // 清空预加载缓存（新一批题目已加载）
+      setPrefetchedQuestions([]);
     } catch (error) {
       console.error('加载题目失败:', error);
     } finally {
@@ -95,6 +107,33 @@ const Practice: React.FC = () => {
   useEffect(() => {
     loadQuestions();
   }, []);
+
+  // 预加载：当剩余题目不足阈值时，后台请求下一批
+  useEffect(() => {
+    const remaining = state.questions.length - state.currentIndex;
+    const shouldPrefetch = remaining <= PREFETCH_THRESHOLD
+      && remaining > 0
+      && !isPrefetching.current
+      && prefetchedQuestions.length === 0
+      && state.phase !== 'summary';
+
+    if (!shouldPrefetch) return;
+
+    isPrefetching.current = true;
+    const prefetch = async () => {
+      try {
+        const response = currentMode === 'mistake'
+          ? await practiceApi.getMistakes(BATCH_SIZE, currentSubject)
+          : await practiceApi.getNext(BATCH_SIZE, currentSubject);
+        setPrefetchedQuestions(response.data);
+      } catch (error) {
+        console.error('预加载题目失败:', error);
+      } finally {
+        isPrefetching.current = false;
+      }
+    };
+    prefetch();
+  }, [state.currentIndex, state.questions.length, state.phase, currentMode, currentSubject, prefetchedQuestions.length]);
 
   const handleAnswer = async (answer: string) => {
     const currentQuestion = state.questions[state.currentIndex];
@@ -158,29 +197,30 @@ const Practice: React.FC = () => {
     }
   }, [state.questions, state.sessionStats.start_time, loadQuestions]);
 
-  const handleNext = useCallback(async () => {
-    // 获取当前状态的快照，用于自动评分逻辑
-    // 由于 handleNext 是 async 且可能被多次触发，我们在这里使用 state 的快照
-    
-    // 如果还没评分，则根据正确与否自动给一个默认评分 (3-良好 或 1-重来)
-    // 这样可以确保就算用户不点击评分按钮，系统也会记录学习进度，更新题库统计
-    if (state.lastAnswer && !state.hasRated) {
-      try {
-        const defaultRating = state.lastAnswer.isCorrect ? 3 : 1;
-        await practiceApi.rate({
-          question_id: state.lastAnswer.questionId,
-          rating: defaultRating,
-        });
-        // 注意：这里不需要设置 hasRated 为 true，因为我们马上就要切到下一题了
-      } catch (error) {
-        console.error('自动评分失败:', error);
-      }
-    }
-
+  /** 切换到下一题，优先使用预加载的题目 */
+  const advanceToNext = useCallback(() => {
     const nextIndex = state.currentIndex + 1;
 
     if (nextIndex >= state.questions.length) {
-      // 进入总结阶段
+      // 当前批次已用完，尝试使用预加载的题目
+      if (prefetchedQuestions.length > 0) {
+        setState(prev => ({
+          ...prev,
+          questions: prefetchedQuestions,
+          currentIndex: 0,
+          phase: 'question',
+          lastAnswer: null,
+          hasRated: false,
+          sessionStats: {
+            ...prev.sessionStats,
+            total_count: prev.sessionStats.total_count + prefetchedQuestions.length,
+          },
+          questionStartTime: Date.now(),
+        }));
+        setPrefetchedQuestions([]);
+        return;
+      }
+      // 没有预加载的题目，进入总结阶段
       fetchSummary();
     } else {
       setState(prev => ({
@@ -192,7 +232,25 @@ const Practice: React.FC = () => {
         questionStartTime: Date.now(),
       }));
     }
-  }, [state.currentIndex, state.questions.length, state.lastAnswer, state.hasRated, fetchSummary]);
+  }, [state.currentIndex, state.questions.length, prefetchedQuestions, fetchSummary]);
+
+  const handleNext = useCallback(async () => {
+    // 如果还没评分，则根据正确与否自动给一个默认评分 (3-良好 或 1-重来)
+    // 这样可以确保就算用户不点击评分按钮，系统也会记录学习进度，更新题库统计
+    if (state.lastAnswer && !state.hasRated) {
+      try {
+        const defaultRating = state.lastAnswer.isCorrect ? 3 : 1;
+        await practiceApi.rate({
+          question_id: state.lastAnswer.questionId,
+          rating: defaultRating,
+        });
+      } catch (error) {
+        console.error('自动评分失败:', error);
+      }
+    }
+
+    advanceToNext();
+  }, [state.lastAnswer, state.hasRated, advanceToNext]);
 
   const handleRate = useCallback(async (rating: number) => {
     if (!state.lastAnswer || state.hasRated) return;
@@ -202,7 +260,7 @@ const Practice: React.FC = () => {
         question_id: state.lastAnswer.questionId,
         rating,
       });
-      
+
       setState(prev => ({
         ...prev,
         hasRated: true
@@ -211,49 +269,30 @@ const Practice: React.FC = () => {
       // 评分后直接跳转下一题
       // 使用 setTimeout 稍微延迟，提升用户体验（能看到评分反馈）
       setTimeout(() => {
-        setState(prev => {
-          const nextIndex = prev.currentIndex + 1;
-          if (nextIndex >= prev.questions.length) {
-            // 这里不能直接在 setState 里调用 side effect
-            // 实际上 handleNext 的 useCallback 已经包含了这个逻辑
-            // 但为了简单，我们在外面调用
-            return prev; 
-          }
-          return {
-            ...prev,
-            currentIndex: nextIndex,
-            phase: 'question',
-            lastAnswer: null,
-            hasRated: false,
-            questionStartTime: Date.now(),
-          };
-        });
-
-        // 检查是否需要加载新题目
-        if (state.currentIndex + 1 >= state.questions.length) {
-          fetchSummary();
-        }
+        advanceToNext();
       }, 200);
     } catch (error) {
       console.error('评分失败:', error);
     }
-  }, [state.currentIndex, state.questions.length, state.lastAnswer, state.hasRated, fetchSummary]);
+  }, [state.lastAnswer, state.hasRated, advanceToNext]);
 
   const handleIgnore = useCallback(async () => {
     if (!state.lastAnswer) return;
-    
+
     try {
       await practiceApi.markIgnored(state.lastAnswer.questionId);
       // 标记为忽略后，直接进入下一题
-      handleNext();
+      advanceToNext();
     } catch (error) {
       console.error('标记忽略失败:', error);
     }
-  }, [state.lastAnswer, handleNext]);
+  }, [state.lastAnswer, advanceToNext]);
 
   const currentQuestion = state.questions[state.currentIndex];
 
-  if (loading) {
+  // 首屏快速渲染：只在首次加载（questions 为空）时显示全屏 spinner
+  // 一旦有题目数据就立即渲染，不再阻塞等待全部加载
+  if (loading && state.questions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <div className="flex items-center gap-3 text-[#64748B]">
@@ -264,7 +303,7 @@ const Practice: React.FC = () => {
     );
   }
 
-  if (!currentQuestion) {
+  if (!currentQuestion && !loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-6">
         <div className="text-center">
@@ -319,14 +358,16 @@ const Practice: React.FC = () => {
           onExit={() => navigate('/')}
         />
       ) : state.phase === 'question' ? (
-        <QuestionCard
-          id={currentQuestion.id}
-          questionType={currentQuestion.question_type}
-          content={currentQuestion.content}
-          options={currentQuestion.options}
-          mistakeCount={currentQuestion.mistake_count}
-          onAnswer={handleAnswer}
-        />
+        currentQuestion && (
+          <QuestionCard
+            id={currentQuestion.id}
+            questionType={currentQuestion.question_type}
+            content={currentQuestion.content}
+            options={currentQuestion.options}
+            mistakeCount={currentQuestion.mistake_count}
+            onAnswer={handleAnswer}
+          />
+        )
       ) : (
         state.lastAnswer && currentQuestion && (
           <AnswerResult
