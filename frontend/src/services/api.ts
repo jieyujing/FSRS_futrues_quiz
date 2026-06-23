@@ -58,4 +58,16 @@ export const importApi = {
   deleteSource: (source: string) => api.delete(`/import/source/${source}`),
 };
 
+// 模拟考试相关
+export const examApi = {
+  getQuestions: (source: string) =>
+    api.get('/exam/questions', { params: { source } }),
+  submit: (data: { source: string; answers: Record<number | string, string>; time_spent: number }) =>
+    api.post('/exam/submit', data),
+  getHistory: () =>
+    api.get('/exam/history'),
+  deleteHistory: (id: number) =>
+    api.delete(`/exam/history/${id}`),
+};
+
 export default api;

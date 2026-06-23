@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base, run_migrations
-from app.models import Question, LearningRecord, AnswerHistory
-from app.api import questions_router, practice_router, import_router, flashcards_router
+from app.models import Question, LearningRecord, AnswerHistory, ExamRecord
+from app.api import questions_router, practice_router, import_router, flashcards_router, exam_router
 
 # 创建应用
 app = FastAPI(
@@ -26,6 +26,7 @@ app.include_router(questions_router)
 app.include_router(practice_router)
 app.include_router(import_router)
 app.include_router(flashcards_router)
+app.include_router(exam_router)
 
 
 @app.on_event("startup")

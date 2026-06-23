@@ -1,9 +1,10 @@
 import React from 'react';
 import { HashRouter, Routes, Route, NavLink } from 'react-router-dom';
-import { GraduationCap, BookOpen } from 'lucide-react';
+import { GraduationCap, BookOpen, ClipboardList } from 'lucide-react';
 import Home from './pages/Home';
 import Practice from './pages/Practice';
 import QuestionBank from './pages/QuestionBank';
+import Exam from './pages/Exam';
 
 const App: React.FC = () => {
   return (
@@ -48,6 +49,19 @@ const App: React.FC = () => {
                   <BookOpen className="w-4 h-4" />
                   刷题
                 </NavLink>
+                <NavLink
+                  to="/exam"
+                  className={({ isActive }) =>
+                    `px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-[#0F172A] text-white shadow-sm'
+                        : 'text-[#64748B] hover:text-[#0F172A] hover:bg-gray-100'
+                    }`
+                  }
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  模考
+                </NavLink>
               </div>
             </div>
           </div>
@@ -59,6 +73,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/practice" element={<Practice />} />
             <Route path="/bank" element={<QuestionBank />} />
+            <Route path="/exam" element={<Exam />} />
           </Routes>
         </main>
       </div>

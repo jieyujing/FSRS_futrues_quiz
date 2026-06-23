@@ -18,6 +18,27 @@ class FileReader:
     @staticmethod
     def read_pdf(file_path: str) -> str:
         """读取 PDF 文件文本"""
+        import sys
+        import subprocess
+
+        # 优先使用 macOS 原生 Vision OCR 提取
+        if sys.platform == "darwin":
+            ocr_swift_path = os.path.join(os.path.dirname(__file__), "ocr.swift")
+            if os.path.exists(ocr_swift_path):
+                print(f"  [OCR] 使用 macOS Vision 提取 PDF 文字: {os.path.basename(file_path)}")
+                result = subprocess.run(
+                    ["swift", ocr_swift_path, file_path],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8"
+                )
+                if result.returncode == 0:
+                    return result.stdout
+                else:
+                    print(f"  ⚠️ macOS Vision OCR 提取失败 (code {result.returncode}): {result.stderr}")
+
+        # 降级或在非 Mac 平台使用 PyPDF2
+        print(f"  [PDF] 使用 PyPDF2 读取 PDF 文本")
         reader = PdfReader(file_path)
         text_parts = []
         for page in reader.pages:

@@ -39,30 +39,45 @@ class AgentParser:
         return self._parse_single(text)
 
     def _parse_single(self, text: str) -> List[Dict]:
-        """解析单个文本块"""
+        """解析单个文本块，包含指数退避重试机制"""
+        import time
         prompt = self._build_prompt(text)
+        max_retries = 5
+        base_delay = 3.0  # 初始等待 3 秒
 
-        try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "你是一个专业的题库解析助手。请严格按照 JSON 格式返回结果。"},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.1,
-                max_tokens=16000,
-                timeout=300.0  # 5分钟超时
-            )
+        for attempt in range(max_retries):
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "你是一个专业的题库解析助手。请严格按照 JSON 格式返回结果。"},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.1,
+                    max_tokens=16000,
+                    timeout=300.0  # 5分钟超时
+                )
 
-            content = response.choices[0].message.content
-            return self._parse_response(content)
+                content = response.choices[0].message.content
+                questions = self._parse_response(content)
+                if questions:
+                    return questions
+                else:
+                    print(f"  ⚠️ 模型未返回有效 JSON，重试中 (第 {attempt + 1}/{max_retries} 次)...")
+            except Exception as e:
+                print(f"  ⚠️ Agent 调用异常: {e}")
 
-        except Exception as e:
-            print(f"Agent 解析失败: {e}")
-            return []
+            if attempt < max_retries - 1:
+                delay = base_delay * (2 ** attempt)
+                print(f"  ⏳ 将于 {delay} 秒后重试...")
+                time.sleep(delay)
+
+        print(f"  ❌ 达到最大重试次数，当前文本块解析失败")
+        return []
 
     def _parse_long_text(self, text: str) -> List[Dict]:
         """分割长文本处理"""
+        import time
         # 按题目编号分割 - 使用更简单直接的方式
         # 匹配: 数字. 或 数字、 开头的行
         parts = re.split(r'\n(?=\d+[\.\、]\s)', text)
@@ -91,6 +106,7 @@ class AgentParser:
                     questions = self._parse_single(part)
                     all_questions.extend(questions)
                     print(f"    解析出 {len(questions)} 题")
+                    time.sleep(2.0)  # 主动间隔，防止触发 OpenRouter 频控
                 except Exception as e:
                     print(f"    块处理失败: {e}")
         else:
@@ -120,6 +136,7 @@ class AgentParser:
                     questions = self._parse_single(chunk)
                     all_questions.extend(questions)
                     print(f"    解析出 {len(questions)} 题")
+                    time.sleep(2.0)  # 主动间隔，防止触发 OpenRouter 频控
                 except Exception as e:
                     print(f"    块处理失败: {e}")
 
