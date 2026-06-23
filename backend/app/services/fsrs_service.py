@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, case
 from typing import List, Optional
 import random
-from ..models import Question, LearningRecord, AnswerHistory
+from ..models import Question, LearningRecord, AnswerHistory, Flashcard
 
 
 class FSRSService:
@@ -30,7 +30,7 @@ class FSRSService:
         2. 如果该类型到期题不足，从新题目中补充
         3. 确保每种题型都有出镜机会，避免单一题型刷屏
         """
-        now = datetime.now()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         all_selected = []
         selected_ids = set()
 
@@ -99,7 +99,7 @@ class FSRSService:
         subject: Optional[str] = None
     ) -> List[Question]:
         """获取错题，强制保持题型多样性"""
-        now = datetime.now()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         all_selected = []
         selected_ids = set()
 
@@ -171,31 +171,86 @@ class FSRSService:
             record = LearningRecord(
                 question_id=question_id,
                 is_ignored=True,
-                next_review=datetime.now() + timedelta(days=3650) # 设置为很久以后复习
+                next_review=datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=3650) # 设置为很久以后复习
             )
             db.add(record)
         else:
             record.is_ignored = True
-            record.next_review = datetime.now() + timedelta(days=3650)
+            record.next_review = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=3650)
             
         db.commit()
         return True
 
+    def get_next_flashcards(
+        self,
+        db: Session,
+        limit: int = 20,
+        subject: Optional[str] = None
+    ) -> List[Flashcard]:
+        """
+        获取推荐复习的卡片
+
+        策略：
+        1. 优先获取已到期卡片（复习优先）
+        2. 如果到期卡片不足，从新卡片中补充
+        """
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        all_selected = []
+        selected_ids = set()
+
+        # 基础查询
+        base_query = db.query(Flashcard)
+        if subject:
+            base_query = base_query.join(Question).filter(Question.subject == subject)
+
+        # 1. 查找已到期卡片
+        due_cards = (
+            base_query.join(LearningRecord, Flashcard.id == LearningRecord.flashcard_id)
+            .filter(
+                LearningRecord.next_review <= now,
+                LearningRecord.is_ignored == False
+            )
+            .order_by(LearningRecord.retrievability.asc())
+            .limit(limit)
+            .all()
+        )
+        for c in due_cards:
+            all_selected.append(c)
+            selected_ids.add(c.id)
+
+        # 2. 从未学习的新卡片中补充
+        if len(due_cards) < limit:
+            needed = limit - len(due_cards)
+            new_cards = (
+                base_query.outerjoin(LearningRecord, Flashcard.id == LearningRecord.flashcard_id)
+                .filter(LearningRecord.id == None)
+                .order_by(func.random())
+                .limit(needed)
+                .all()
+            )
+            for c in new_cards:
+                all_selected.append(c)
+                selected_ids.add(c.id)
+
+        return all_selected[:limit]
+
     def update_after_review(
         self,
         db: Session,
-        question_id: int,
+        item_id: int,
         rating: Rating,
-        is_correct: bool
+        is_correct: bool,
+        item_type: str = "question"
     ) -> LearningRecord:
         """
-        答题后更新 FSRS 参数
+        答题/看卡片后更新 FSRS 参数
 
         Args:
             db: 数据库会话
-            question_id: 题目 ID
+            item_id: 题目 ID 或 卡片 ID
             rating: FSRS 评分 (1-4)
-            is_correct: 是否答对
+            is_correct: 是否答对/答对卡片
+            item_type: 实体类型，"question" 或 "flashcard"
 
         Returns:
             更新后的学习记录
@@ -203,13 +258,22 @@ class FSRSService:
         now = datetime.now(timezone.utc)
 
         # 获取或创建学习记录
-        record = db.query(LearningRecord).filter(
-            LearningRecord.question_id == question_id
-        ).first()
-
-        if not record:
-            record = LearningRecord(question_id=question_id)
-            db.add(record)
+        if item_type == "question":
+            record = db.query(LearningRecord).filter(
+                LearningRecord.question_id == item_id
+            ).first()
+            if not record:
+                record = LearningRecord(question_id=item_id)
+                db.add(record)
+        elif item_type == "flashcard":
+            record = db.query(LearningRecord).filter(
+                LearningRecord.flashcard_id == item_id
+            ).first()
+            if not record:
+                record = LearningRecord(flashcard_id=item_id)
+                db.add(record)
+        else:
+            raise ValueError(f"Unsupported item_type: {item_type}")
 
         # 创建 FSRS Card
         if record.difficulty is not None and record.stability is not None:
@@ -268,13 +332,15 @@ class FSRSService:
         # 1. 题目与学习进度统计 (已增加索引)
         total = db.query(Question).count()
         learned = db.query(LearningRecord).filter(
+            LearningRecord.question_id != None,
             (LearningRecord.review_count > 0) | (LearningRecord.is_ignored == True)
         ).count()
 
         # 2. 今日到期统计 (已增加索引)
         due_today = db.query(LearningRecord).filter(
+            LearningRecord.question_id != None,
             LearningRecord.next_review != None,
-            LearningRecord.next_review <= datetime.now(),
+            LearningRecord.next_review <= datetime.now(timezone.utc).replace(tzinfo=None),
             LearningRecord.is_ignored == False
         ).count()
 
@@ -282,6 +348,8 @@ class FSRSService:
         ans_stats = db.query(
             func.count(AnswerHistory.id).label("total"),
             func.sum(case((AnswerHistory.is_correct == True, 1), else_=0)).label("correct")
+        ).filter(
+            AnswerHistory.question_id != None
         ).first()
 
         total_answers = ans_stats.total or 0
@@ -297,7 +365,7 @@ class FSRSService:
 
     def get_fsrs_statistics(self, db: Session) -> dict:
         """获取 FSRS 详细统计"""
-        now = datetime.now()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
 
         # 1. 按掌握程度分布
         # 基于 Stability (S) 而非瞬时 Retrievability (R)
@@ -311,6 +379,7 @@ class FSRSService:
             func.sum(case(((LearningRecord.stability < 5.0) & (LearningRecord.retrievability >= 0.7) & (LearningRecord.is_ignored == False), 1), else_=0)).label("learning"),
             func.sum(case(((LearningRecord.retrievability < 0.7) & (LearningRecord.is_ignored == False), 1), else_=0)).label("review_needed")
         ).filter(
+            LearningRecord.question_id != None,
             (LearningRecord.review_count > 0) | (LearningRecord.is_ignored == True)
         ).first()
 
@@ -323,6 +392,7 @@ class FSRSService:
         avg_retrievability = db.query(
             func.avg(LearningRecord.retrievability)
         ).filter(
+            LearningRecord.question_id != None,
             LearningRecord.retrievability != None
         ).scalar() or 0
 
@@ -330,6 +400,7 @@ class FSRSService:
         avg_stability = db.query(
             func.avg(LearningRecord.stability)
         ).filter(
+            LearningRecord.question_id != None,
             LearningRecord.stability != None
         ).scalar() or 0
 
@@ -337,6 +408,7 @@ class FSRSService:
         avg_difficulty = db.query(
             func.avg(LearningRecord.difficulty)
         ).filter(
+            LearningRecord.question_id != None,
             LearningRecord.difficulty != None
         ).scalar() or 0
 
@@ -345,6 +417,7 @@ class FSRSService:
             func.sum(LearningRecord.review_count),
             func.sum(LearningRecord.mistake_count)
         ).filter(
+            LearningRecord.question_id != None,
             LearningRecord.review_count != None
         ).first()
 
@@ -358,11 +431,14 @@ class FSRSService:
             func.sum(case((LearningRecord.last_rating == 3, 1), else_=0)).label("good"),
             func.sum(case((LearningRecord.last_rating == 4, 1), else_=0)).label("easy")
         ).filter(
+            LearningRecord.question_id != None,
             LearningRecord.last_rating != None
         ).first()
 
         # 7. 学习进度（有学习记录 vs 总题目）
-        total_with_records = db.query(LearningRecord).count()
+        total_with_records = db.query(LearningRecord).filter(
+            LearningRecord.question_id != None
+        ).count()
 
         return {
             "mastery_distribution": {

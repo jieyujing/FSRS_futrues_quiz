@@ -9,7 +9,8 @@ class LearningRecord(Base):
     __tablename__ = "learning_records"
 
     id = Column(Integer, primary_key=True, index=True)
-    question_id = Column(Integer, ForeignKey("questions.id"), unique=True, nullable=False)
+    question_id = Column(Integer, ForeignKey("questions.id"), unique=True, nullable=True)
+    flashcard_id = Column(Integer, ForeignKey("flashcards.id"), unique=True, nullable=True, comment="卡片 ID")
 
     # FSRS参数
     difficulty = Column(Float, default=0.3, comment="难度 0-1")
@@ -28,6 +29,7 @@ class LearningRecord(Base):
 
     # 关系
     question = relationship("Question", backref="learning_record")
+    flashcard = relationship("Flashcard", backref="learning_record")
 
 
 class AnswerHistory(Base):
@@ -35,7 +37,8 @@ class AnswerHistory(Base):
     __tablename__ = "answer_history"
 
     id = Column(Integer, primary_key=True, index=True)
-    question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
+    question_id = Column(Integer, ForeignKey("questions.id"), nullable=True)
+    flashcard_id = Column(Integer, ForeignKey("flashcards.id"), nullable=True, comment="卡片 ID")
     user_answer = Column(String(50), comment="用户答案")
     is_correct = Column(Boolean, index=True, comment="是否正确")
     rating = Column(Integer, comment="FSRS评分 1-4")
@@ -44,3 +47,4 @@ class AnswerHistory(Base):
 
     # 关系
     question = relationship("Question", backref="answer_history")
+    flashcard = relationship("Flashcard", backref="answer_history")

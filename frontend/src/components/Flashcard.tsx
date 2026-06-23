@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layers, Tag, ChevronRight, Eye } from 'lucide-react';
+import { Layers, Tag, Eye } from 'lucide-react';
 
 interface FlashcardProps {
   id: number;

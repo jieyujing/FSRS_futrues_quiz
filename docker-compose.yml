@@ -6,12 +6,23 @@ services:
     build:
       context: ./backend
     container_name: lklc-backend
+    environment:
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-http://192.168.100.99:8317/v1}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-jieyujing}
+      - OPENAI_MODEL=${OPENAI_MODEL:-kimi-k2.5}
+      - DOC_DIR=/app/doc
     volumes:
       - ./backend/data:/app/data # 持久化 SQLite 数据库
       - ./doc:/app/doc           # 挂载文档目录，方便后续导入
-    ports:
-      - "8005:8005"
+    # 内部使用 8005 端口，不再暴露到外部
+    expose:
+      - "8005"
     restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8005/docs')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # 前端服务
   frontend:
@@ -19,7 +30,8 @@ services:
       context: ./frontend
     container_name: lklc-frontend
     ports:
-      - "80:80"
+      - "8318:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: always

@@ -24,40 +24,7 @@ async def get_next_flashcards(
     db: Session = Depends(get_db)
 ):
     """获取下一组需要复习的卡片"""
-    # 逻辑: 
-    # 1. 优先获取到期(next_review <= now)的卡片
-    # 2. 其次获取从未学习过(没有 learning_record)的卡片
-
-    now = datetime.now()
-
-    # 1. 获取到期卡片
-    due_query = db.query(Flashcard).join(
-        LearningRecord, Flashcard.id == LearningRecord.flashcard_id
-    ).filter(
-        LearningRecord.next_review <= now
-    )
-
-    if subject:
-        due_query = due_query.join(Question).filter(Question.subject == subject)
-
-    due_cards = due_query.order_by(LearningRecord.next_review.asc()).limit(limit).all()
-
-    # 2. 如果不足，补充新卡片
-    if len(due_cards) < limit:
-        new_limit = limit - len(due_cards)
-        new_query = db.query(Flashcard).outerjoin(
-            LearningRecord, Flashcard.id == LearningRecord.flashcard_id
-        ).filter(
-            LearningRecord.id == None
-        )
-
-        if subject:
-            new_query = new_query.join(Question).filter(Question.subject == subject)
-
-        new_cards = new_query.limit(new_limit).all()
-        due_cards.extend(new_cards)
-
-    return due_cards
+    return fsrs_service.get_next_flashcards(db, limit, subject)
 
 
 @router.post("/rate")
@@ -71,14 +38,15 @@ async def rate_flashcard(
     if not card:
         raise HTTPException(status_code=404, detail="Card not found")
 
-    # 获取或创建学习记录
-    record = db.query(LearningRecord).filter(LearningRecord.flashcard_id == card_id).first()
-    if not record:
-        record = LearningRecord(flashcard_id=card_id)
-        db.add(record)
-
-    # 更新 FSRS 参数
-    fsrs_service.update_record(record, rating)
+    # 更新 FSRS 参数，统一委托给深度调度引擎
+    from fsrs import Rating
+    record = fsrs_service.update_after_review(
+        db,
+        card_id,
+        Rating(rating),
+        is_correct=(rating > 1),
+        item_type="flashcard"
+    )
 
     # 记录答题历史
     history = AnswerHistory(
@@ -94,7 +62,7 @@ async def rate_flashcard(
 
 
 @router.post("/generate/batch", response_model=Dict)
-...
+async def generate_flashcards(
     background_tasks: BackgroundTasks,
     subject: Optional[str] = None,
     limit: int = 50,

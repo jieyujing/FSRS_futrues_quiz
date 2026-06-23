@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import engine, Base
+from app.database import engine, Base, run_migrations
 from app.models import Question, LearningRecord, AnswerHistory
-from app.api import questions_router, practice_router, import_router
+from app.api import questions_router, practice_router, import_router, flashcards_router
 
 # 创建应用
 app = FastAPI(
@@ -25,11 +25,13 @@ app.add_middleware(
 app.include_router(questions_router)
 app.include_router(practice_router)
 app.include_router(import_router)
+app.include_router(flashcards_router)
 
 
 @app.on_event("startup")
 async def startup():
     """启动时创建数据库表"""
+    run_migrations()
     Base.metadata.create_all(bind=engine)
 
 

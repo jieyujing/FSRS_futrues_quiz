@@ -185,7 +185,8 @@ def submit_rating(rating: RatingSubmit, db: Session = Depends(get_db)):
         db,
         rating.question_id,
         Rating(rating.rating),
-        answer.is_correct
+        answer.is_correct,
+        item_type="question"
     )
 
     # 更新答题历史
