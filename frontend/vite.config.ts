@@ -9,6 +9,16 @@ export default defineConfig({
     host: true,
     port: 5173,
     allowedHosts: ['quiz.jieyujing.eu.org'],
+    proxy: {
+      '/practice': 'http://localhost:8005',
+      '/exam': 'http://localhost:8005',
+      '/import': 'http://localhost:8005',
+      '/questions': 'http://localhost:8005',
+      '/flashcards': 'http://localhost:8005',
+      '/health': 'http://localhost:8005',
+      '/docs': 'http://localhost:8005',
+      '/openapi.json': 'http://localhost:8005',
+    },
   }
 })
 
