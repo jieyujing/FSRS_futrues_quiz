@@ -10,7 +10,7 @@ class Question(Base):
     id = Column(Integer, primary_key=True, index=True)
     subject = Column(String(50), nullable=False, index=True, comment="科目：基础知识/法律法规")
     source = Column(String(200), nullable=False, comment="来源文件名")
-    question_type = Column(String(20), nullable=False, comment="题型：单选/多选/判断")
+    question_type = Column(String(20), nullable=False, comment="题型：单选题/多选题/判断题/综合题")
     question_number = Column(Integer, comment="原题号")
     content = Column(Text, nullable=False, comment="题目内容")
     content_hash = Column(String(32), unique=True, index=True, comment="题目内容哈希，用于去重")

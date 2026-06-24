@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { examApi, importApi } from '../services/api';
-import { 
+import { isMultiChoice } from '../utils/questionType';
+import {
   ClipboardList, 
   Play, 
   Trash2, 
@@ -307,7 +308,7 @@ const Exam: React.FC = () => {
 
   // 页面导航控制
   const currentQuestion = questions[currentIndex];
-  const isMultiChoice = currentQuestion ? (currentQuestion.question_type.includes('多选') || currentQuestion.question_type.includes('不定项')) : false;
+  const isMultiChoiceResult = currentQuestion ? isMultiChoice(currentQuestion.question_type) : false;
 
   // 5. 渲染各个子视图
   
@@ -573,7 +574,7 @@ const Exam: React.FC = () => {
                     return (
                       <button
                         key={key}
-                        onClick={() => handleSelectOption(currentQuestion.id, key, isMultiChoice)}
+                        onClick={() => handleSelectOption(currentQuestion.id, key, isMultiChoiceResult)}
                         className={`flex items-start text-left gap-3.5 p-4 rounded-xl border-2 transition-all duration-200 group cursor-pointer ${
                           isSelected 
                             ? 'border-[#0F172A] bg-slate-50 text-[#0F172A] font-medium shadow-sm' 
@@ -608,7 +609,7 @@ const Exam: React.FC = () => {
                 上一题
               </button>
 
-              {isMultiChoice && (
+              {isMultiChoiceResult && (
                 <button
                   onClick={() => handleClearAnswer(currentQuestion.id)}
                   className="px-3.5 py-1.5 text-xs font-semibold text-[#64748B] border border-gray-200 hover:border-red-200 hover:text-red-500 rounded-lg hover:bg-red-50/30 transition-all"

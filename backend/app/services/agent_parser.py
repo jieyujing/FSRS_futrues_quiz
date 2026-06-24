@@ -148,7 +148,7 @@ class AgentParser:
 
 每道题目格式：
 {{
-  "question_type": "单选|多选|判断",
+  "question_type": "单选题|多选题|判断题|综合题",
   "question_number": 题号数字,
   "content": "题目内容",
   "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},

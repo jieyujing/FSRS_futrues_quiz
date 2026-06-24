@@ -96,24 +96,13 @@ def check_answer_correct(question: Question, user_answer: str) -> bool:
     user_answer = user_answer.upper().strip()
     correct_answer = question.correct_answer.upper().strip()
 
-    if question.question_type == "判断":
-        # 统一映射到 A/B 进行比较
-        mapping = {
-            "正确": "A", "错误": "B",
-            "对": "A", "错": "B",
-            "T": "A", "F": "B",
-            "A": "A", "B": "B"
-        }
-        user_val = mapping.get(user_answer, user_answer)
-        correct_val = mapping.get(correct_answer, correct_answer)
-        return user_val == correct_val
-    
-    # 针对多选，去掉空格和逗号后比较（可选，但目前多选通常存为 "ABC" 这种形式）
-    if "多选" in question.question_type or "不定项" in question.question_type:
+    # 针对多选/综合题，去掉空格和逗号后比较（多选通常存为 "ABC" 这种形式）
+    if question.question_type in ("多选题", "综合题"):
         u = "".join(sorted(user_answer.replace(",", "").replace(" ", "")))
         c = "".join(sorted(correct_answer.replace(",", "").replace(" ", "")))
         return u == c
 
+    # 单选题、判断题使用简单 == 比较
     return user_answer == correct_answer
 
 

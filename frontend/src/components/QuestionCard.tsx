@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FileQuestion, AlertCircle } from 'lucide-react';
+import { isMultiChoice } from '../utils/questionType';
 
 interface Option {
   [key: string]: string;
@@ -25,7 +26,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 }) => {
   const [selected, setSelected] = useState<string>('');
 
-  const isMulti = questionType.includes('多选') || questionType.includes('不定项');
+  const isMulti = isMultiChoice(questionType);
 
   const handleSelect = (key: string) => {
     if (disabled) return;
@@ -53,27 +54,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   };
 
   const renderOptions = () => {
-    if (questionType === '判断') {
-      return (
-        <div className="grid grid-cols-2 gap-4">
-          {['正确', '错误'].map((opt) => (
-            <button
-              key={opt}
-              onClick={() => handleSelect(opt)}
-              disabled={disabled}
-              className={`p-5 rounded-xl border-2 font-medium transition-all duration-200 cursor-pointer ${
-                selected === opt
-                  ? 'border-[#0F172A] bg-[#0F172A] text-white shadow-md'
-                  : 'border-gray-200 bg-white text-[#0F172A] hover:border-[#1E3A8A] hover:bg-gray-50'
-              } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-      );
-    }
-
     return (
       <div className="space-y-3">
         {options &&

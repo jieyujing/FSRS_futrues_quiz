@@ -13,7 +13,7 @@ class FSRSService:
     def __init__(self):
         self.scheduler = Scheduler()
         # 默认推荐比例
-        self.target_ratios = {"单选": 0.45, "多选": 0.35, "判断": 0.20}
+        self.target_ratios = {"单选题": 0.40, "多选题": 0.25, "判断题": 0.20, "综合题": 0.15}
 
     def get_next_questions(
         self,

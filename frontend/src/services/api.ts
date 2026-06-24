@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: `http://${window.location.hostname}:8005`,
+  // 开发环境直连后端 8005；生产环境走 nginx 同源代理，无需指定端口
+  baseURL: import.meta.env.DEV
+    ? `http://${window.location.hostname}:8005`
+    : '',
   headers: {
     'Content-Type': 'application/json',
   },
